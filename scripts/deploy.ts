@@ -1,8 +1,9 @@
 import { ethers } from "hardhat";
+import { rewardsTokenAddress } from "./config";
 
 async function main() {
   const MerkleRewards = await ethers.getContractFactory("MerkleRewards");
-  const merkleRewards = await MerkleRewards.deploy();
+  const merkleRewards = await MerkleRewards.deploy(rewardsTokenAddress);
 
   await merkleRewards.deployed();
 
