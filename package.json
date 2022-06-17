@@ -1,9 +1,13 @@
 {
   "name": "merkle-rewards",
   "scripts": {
-    "test": "npx hardhat test ",
+    "test": "npx hardhat test",
     "compile": "npx hardhat compile",
+    "chain": "npx hardhat node",
     "deploy": "npx hardhat run scripts/deploy.ts",
+    "deploy:local": "npx hardhat run scripts/deploy.ts --network localhost",
+    "deploy:goerli": "npx hardhat run scripts/deploy.ts --network goerli",
+    "deploy:mainnet": "npx hardhat run scripts/deploy.ts --network mainnet",
     "lint": "eslint '**/*.{js,ts}'",
     "prettier": "prettier '**/*.{json,sol,md}' --check",
     "solhint": "solhint 'contracts/**/*.sol'"
