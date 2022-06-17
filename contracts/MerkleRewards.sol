@@ -6,7 +6,6 @@ import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import "hardhat/console.sol";
 
 contract MerkleRewards is Ownable {
     using SafeERC20 for IERC20;
@@ -14,10 +13,11 @@ contract MerkleRewards is Ownable {
 
     IERC20 immutable public rewardsToken;
     bytes32 public merkleRoot;
+    uint256 previousTotalRewards;
     mapping(address => uint256) public withdrawn;
 
     event Claimed(address account, uint256 amount, uint256 totalAmount);
-    event MerkleRootSet(bytes32 merkleRoot, uint256 additionalRewards);
+    event MerkleRootSet(bytes32 merkleRoot, uint256 totalRewards);
 
     constructor(IERC20 _rewardsToken) {
         rewardsToken = _rewardsToken;
@@ -26,12 +26,16 @@ contract MerkleRewards is Ownable {
     /**
      * @dev Set a new merkleRoot and deposit the additional rewards
      */
-    function setMerkleRoot(bytes32 _merkleRoot, uint256 additionalRewards) external onlyOwner {
-        console.log("MerkleRewards: Set Merkle root");
+    function setMerkleRoot(bytes32 _merkleRoot, uint256 totalRewards) external onlyOwner {
+        require(totalRewards > previousTotalRewards, "MR: totalRewards must be >= previousTotalRewards");
+
+        uint256 additionalRewards = totalRewards - previousTotalRewards;
+        previousTotalRewards = totalRewards;
+
         merkleRoot = _merkleRoot;
         rewardsToken.safeTransferFrom(msg.sender, address(this), additionalRewards);
 
-        emit MerkleRootSet(_merkleRoot, additionalRewards);
+        emit MerkleRootSet(_merkleRoot, totalRewards);
     }
 
     /**
@@ -39,8 +43,6 @@ contract MerkleRewards is Ownable {
      * @notice `totalAmount` must be the exact amount set in the latest `merkleRoot`.
      */
     function claim(address account, uint256 totalAmount, bytes32[] calldata proof) external {
-        console.log("MerkleRewards: Claim");
-
         require(totalAmount > withdrawn[account], "MR: totalAmount already withdrawn");
 
         // Verify Merkle proof
