@@ -6,18 +6,16 @@ import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import "./IMerkleRewards.sol";
 
-contract MerkleRewards is Ownable {
+contract MerkleRewards is IMerkleRewards, Ownable {
     using SafeERC20 for IERC20;
     using SafeMath for uint256;
 
-    IERC20 immutable public rewardsToken;
-    bytes32 public merkleRoot;
-    uint256 previousTotalRewards;
-    mapping(address => uint256) public withdrawn;
-
-    event Claimed(address account, uint256 amount, uint256 totalAmount);
-    event MerkleRootSet(bytes32 merkleRoot, uint256 totalRewards);
+    IERC20 public immutable override rewardsToken;
+    bytes32 public override merkleRoot;
+    uint256 public override previousTotalRewards;
+    mapping(address => uint256) public override withdrawn;
 
     constructor(IERC20 _rewardsToken) {
         rewardsToken = _rewardsToken;
@@ -26,7 +24,7 @@ contract MerkleRewards is Ownable {
     /**
      * @dev Set a new merkleRoot and deposit the additional rewards
      */
-    function setMerkleRoot(bytes32 _merkleRoot, uint256 totalRewards) external onlyOwner {
+    function setMerkleRoot(bytes32 _merkleRoot, uint256 totalRewards) external override onlyOwner {
         require(totalRewards > previousTotalRewards, "MR: totalRewards must be >= previousTotalRewards");
 
         uint256 additionalRewards = totalRewards - previousTotalRewards;
@@ -42,7 +40,7 @@ contract MerkleRewards is Ownable {
      * @dev Claim all available rewards for `account`.
      * @notice `totalAmount` must be the exact amount set in the latest `merkleRoot`.
      */
-    function claim(address account, uint256 totalAmount, bytes32[] calldata proof) external {
+    function claim(address account, uint256 totalAmount, bytes32[] calldata proof) external override {
         require(totalAmount > withdrawn[account], "MR: totalAmount already withdrawn");
 
         // Verify Merkle proof
