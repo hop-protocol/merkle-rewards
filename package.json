@@ -1,5 +1,9 @@
 {
-  "name": "merkle-rewards",
+  "name": "@hop-protocol/merkle-rewards",
+  "version": "1.0.0",
+  "description": "Merkle Rewards",
+  "author": "Hop Team (@HopProtocol)",
+  "license": "MIT",
   "scripts": {
     "test": "npx hardhat test",
     "compile": "npx hardhat compile",

@@ -1,46 +1,60 @@
-# Advanced Sample Hardhat Project
+# Merkle Rewards
+A simple contract for distributing ongoing rewards calculated offchain.
 
-This project demonstrates an advanced Hardhat use case, integrating other tools commonly used alongside Hardhat in the ecosystem.
+## Usage
+Rewards are periodically calculated offchain and a new Merkle tree containing the `totalRewards` for each account is produced. The calculated `totalRewards` amount for each account should strictly increase with time.
 
-The project comes with a sample contract, a test for that contract, a sample script that deploys that contract, and an example of a task implementation, which simply lists the available accounts. It also comes with a variety of other tools, preconfigured to work with the project code.
+Each period, the owner calls `setMerkleRoot` and the new `merkleRoot` and `totalAmount` are set. This function also collects the difference between the last `totalAmount` and the new `totalAmount` in rewards tokens from the owner.
 
-Try running some of the following tasks:
+Accounts can withdraw the difference between their `totalAmount` and `merkleRewards.withdrawn(account)`.
 
-```shell
-npx hardhat accounts
-npx hardhat compile
-npx hardhat clean
-npx hardhat test
-npx hardhat node
-npx hardhat help
-REPORT_GAS=true npx hardhat test
-npx hardhat coverage
-npx hardhat run scripts/deploy.ts
-TS_NODE_FILES=true npx ts-node scripts/deploy.ts
-npx eslint '**/*.{js,ts}'
-npx eslint '**/*.{js,ts}' --fix
-npx prettier '**/*.{json,sol,md}' --check
-npx prettier '**/*.{json,sol,md}' --write
-npx solhint 'contracts/**/*.sol'
-npx solhint 'contracts/**/*.sol' --fix
+## Compile
+```
+npm run compile
 ```
 
-# Etherscan verification
-
-To try out Etherscan verification, you first need to deploy a contract to an Ethereum network that's supported by Etherscan, such as Ropsten.
-
-In this project, copy the .env.example file to a file named .env, and then edit it to fill in the details. Enter your Etherscan API key, your Ropsten node URL (eg from Alchemy), and the private key of the account which will send the deployment transaction. With a valid .env file in place, first deploy your contract:
-
-```shell
-hardhat run --network ropsten scripts/deploy.ts
+## Test
+```
+npm run test
 ```
 
-Then, copy the deployment address and paste it in to replace `DEPLOYED_CONTRACT_ADDRESS` in this command:
+## Getting Started
+Create a `.env` file based on `.env-sample`
 
-```shell
-npx hardhat verify --network ropsten DEPLOYED_CONTRACT_ADDRESS "Hello, Hardhat!"
+## Deploy Local
+Start local node
+```
+npm run chain
 ```
 
-# Performance optimizations
+Deploy to local node
+```
+npm run deploy:local
+```
 
-For faster runs of your tests and scripts, consider skipping ts-node's type checking by setting the environment variable `TS_NODE_TRANSPILE_ONLY` to `1` in hardhat's environment. For more details see [the documentation](https://hardhat.org/guides/typescript.html#performance-optimizations).
+## Deploy
+Deploy to Goerli
+```
+npm run goerli
+```
+
+Deploy to Mainnet
+```
+npm run goerli
+```
+# Lint
+
+eslint
+```shell
+npm run eslint
+```
+
+prettier
+```shell
+npm run prettier
+```
+
+solhint
+```shell
+npm run solhint
+```
