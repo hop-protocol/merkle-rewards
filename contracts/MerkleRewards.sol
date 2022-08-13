@@ -12,6 +12,8 @@ contract MerkleRewards is IMerkleRewards, Ownable {
     using SafeERC20 for IERC20;
     using SafeMath for uint256;
 
+    // keccak256(abi.encodePacked("MERKLE_REWARDS_LEAF_HASH")) == 0xc25f889d60f4bc528f554912ac35e9e397b99db0e4dedf3f36bfbe75247f4c5a
+    bytes32 public immutable LEAF_SALT = keccak256(abi.encodePacked("MERKLE_REWARDS_LEAF_HASH"));
     IERC20 public immutable override rewardsToken;
     bytes32 public override merkleRoot;
     uint256 public override previousTotalRewards;
@@ -42,7 +44,7 @@ contract MerkleRewards is IMerkleRewards, Ownable {
      */
     function claim(address account, uint256 totalAmount, bytes32[] calldata proof) external override {
         // Verify Merkle proof
-        bytes32 leaf = keccak256(abi.encodePacked(account, totalAmount));
+        bytes32 leaf = keccak256(abi.encodePacked(LEAF_SALT, account, totalAmount));
         require(MerkleProof.verify(proof, merkleRoot, leaf), "MR: Invalid proof");
 
         uint256 availableAmount = totalAmount.sub(withdrawn[account], "MR: totalAmount already withdrawn");
