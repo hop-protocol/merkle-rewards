@@ -1,4 +1,4 @@
-// import { expect } from "chai";
+import { expect } from "chai";
 import { ethers } from "hardhat";
 const { parseUnits } = ethers.utils;
 
@@ -20,5 +20,21 @@ describe("MerkleRewards", function () {
     const merkleRoot =
       "0x0000000000000000000000000000000000000000000000000000000000000000";
     await merkleRewards.setMerkleRoot(merkleRoot, parseUnits("100"));
+  });
+
+  it("Should return the correct leaf hash", async function () {
+    const MerkleRewards = await ethers.getContractFactory("MerkleRewards");
+    const merkleRewards = await MerkleRewards.deploy(
+      ethers.constants.AddressZero
+    );
+
+    await merkleRewards.deployed();
+
+    const leafSalt = await merkleRewards.LEAF_SALT();
+    const expectedHash = ethers.utils.keccak256(
+      ethers.utils.toUtf8Bytes("MERKLE_REWARDS_LEAF_HASH")
+    );
+
+    expect(leafSalt).to.eq(expectedHash);
   });
 });
