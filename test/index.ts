@@ -1,8 +1,7 @@
 import { expect } from "chai";
 import { ethers } from "hardhat";
 const { BigNumber } = ethers;
-const { parseUnits, keccak256, defaultAbiCoder, solidityKeccak256 } =
-  ethers.utils;
+const { parseUnits, keccak256, solidityKeccak256 } = ethers.utils;
 
 const MAX_UINT =
   "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff";
@@ -23,14 +22,14 @@ describe("MerkleRewards", function () {
     await token.approve(merkleRewards.address, MAX_UINT);
 
     const merkleRoot =
-      "0x0000000000000000000000000000000000000000000000000000000000000000";
+      "0x0000000000000000000000000000000000000000000000000000000000000001";
     await merkleRewards.setMerkleRoot(merkleRoot, parseUnits("100"));
   });
 
   it("Should return the correct leaf salt", async function () {
     const MerkleRewards = await ethers.getContractFactory("MerkleRewards");
     const merkleRewards = await MerkleRewards.deploy(
-      ethers.constants.AddressZero
+      "0x0000000000000000000000000000000000000001"
     );
 
     await merkleRewards.deployed();
@@ -40,7 +39,7 @@ describe("MerkleRewards", function () {
   });
 
   it("Should distribute claimed funds", async function () {
-    const [owner, claimer1, claimer2] = await ethers.getSigners();
+    const [, claimer1, claimer2] = await ethers.getSigners();
 
     const Token = await ethers.getContractFactory("MockToken");
     const token = await Token.deploy();
@@ -63,7 +62,6 @@ describe("MerkleRewards", function () {
       ["bytes32", "address", "uint256"],
       [LEAF_SALT, claimer2.address, amount2]
     );
-    console.log("leaf2", leaf2);
 
     const totalAmount = amount1.add(amount2);
 
@@ -85,7 +83,103 @@ describe("MerkleRewards", function () {
     expect(claimer2Balance.toString()).to.eq("3");
   });
 
-  it("Should revert if funds are claimed", async function () {});
+  it("Should revert if funds are claimed", async function () {
+    const [, claimer1, claimer2] = await ethers.getSigners();
 
-  it("Should revert if entry is not valid", async function () {});
+    const Token = await ethers.getContractFactory("MockToken");
+    const token = await Token.deploy();
+    await token.deployed();
+
+    const MerkleRewards = await ethers.getContractFactory("MerkleRewards");
+    const merkleRewards = await MerkleRewards.deploy(token.address);
+    await merkleRewards.deployed();
+
+    await token.approve(merkleRewards.address, MAX_UINT);
+
+    const amount1 = BigNumber.from(5);
+    const leaf1 = solidityKeccak256(
+      ["bytes32", "address", "uint256"],
+      [LEAF_SALT, claimer1.address, amount1]
+    );
+
+    const amount2 = BigNumber.from(3);
+    const leaf2 = solidityKeccak256(
+      ["bytes32", "address", "uint256"],
+      [LEAF_SALT, claimer2.address, amount2]
+    );
+
+    const totalAmount = amount1.add(amount2);
+
+    const merkleRoot = solidityKeccak256(
+      ["bytes32", "bytes32"],
+      [leaf1, leaf2]
+    );
+    await merkleRewards.setMerkleRoot(merkleRoot, totalAmount);
+
+    await merkleRewards.claim(claimer1.address, amount1, [leaf2]);
+    expect(
+      merkleRewards.claim(claimer1.address, amount1, [leaf2])
+    ).to.be.revertedWith("MR: totalAmount already withdrawn");
+  });
+
+  it("Should revert if entry is not valid", async function () {
+    const [, claimer1, claimer2] = await ethers.getSigners();
+
+    const Token = await ethers.getContractFactory("MockToken");
+    const token = await Token.deploy();
+    await token.deployed();
+
+    const MerkleRewards = await ethers.getContractFactory("MerkleRewards");
+    const merkleRewards = await MerkleRewards.deploy(token.address);
+    await merkleRewards.deployed();
+
+    await token.approve(merkleRewards.address, MAX_UINT);
+
+    const amount1 = BigNumber.from(5);
+    const leaf1 = solidityKeccak256(
+      ["bytes32", "address", "uint256"],
+      [LEAF_SALT, claimer1.address, amount1]
+    );
+
+    const amount2 = BigNumber.from(3);
+    const leaf2 = solidityKeccak256(
+      ["bytes32", "address", "uint256"],
+      [LEAF_SALT, claimer2.address, amount2]
+    );
+
+    const totalAmount = amount1.add(amount2);
+
+    const merkleRoot = solidityKeccak256(
+      ["bytes32", "bytes32"],
+      [leaf1, leaf2]
+    );
+    await merkleRewards.setMerkleRoot(merkleRoot, totalAmount);
+
+    expect(
+      merkleRewards.claim(claimer1.address, amount2, [leaf2])
+    ).to.be.revertedWith("MR: Invalid proof");
+  });
+
+  it("Should transfer the proper amount when setting the Merkle twice", async function () {
+    const Token = await ethers.getContractFactory("MockToken");
+    const token = await Token.deploy();
+    await token.deployed();
+
+    const MerkleRewards = await ethers.getContractFactory("MerkleRewards");
+    const merkleRewards = await MerkleRewards.deploy(token.address);
+    await merkleRewards.deployed();
+
+    await token.approve(merkleRewards.address, MAX_UINT);
+
+    const finalTotal = BigNumber.from(10);
+    const merkleRoot1 =
+      "0x0000000000000000000000000000000000000000000000000000000000000001";
+    const merkleRoot2 =
+      "0x0000000000000000000000000000000000000000000000000000000000000002";
+    await merkleRewards.setMerkleRoot(merkleRoot1, "5");
+    await merkleRewards.setMerkleRoot(merkleRoot2, finalTotal);
+
+    const merkleRewardsBalance = await token.balanceOf(merkleRewards.address);
+    expect(merkleRewardsBalance.toString()).to.eq("10");
+  });
 });
