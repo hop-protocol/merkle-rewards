@@ -65,10 +65,8 @@ describe("MerkleRewards", function () {
 
     const totalAmount = amount1.add(amount2);
 
-    const merkleRoot = solidityKeccak256(
-      ["bytes32", "bytes32"],
-      [leaf1, leaf2]
-    );
+    const sortedLeaves = [leaf1, leaf2].sort();
+    const merkleRoot = solidityKeccak256(["bytes32", "bytes32"], sortedLeaves);
     await merkleRewards.setMerkleRoot(merkleRoot, totalAmount);
 
     await merkleRewards.claim(claimer1.address, amount1, [leaf2]);
@@ -110,10 +108,8 @@ describe("MerkleRewards", function () {
 
     const totalAmount = amount1.add(amount2);
 
-    const merkleRoot = solidityKeccak256(
-      ["bytes32", "bytes32"],
-      [leaf1, leaf2]
-    );
+    const sortedLeaves = [leaf1, leaf2].sort();
+    const merkleRoot = solidityKeccak256(["bytes32", "bytes32"], sortedLeaves);
     await merkleRewards.setMerkleRoot(merkleRoot, totalAmount);
 
     await merkleRewards.claim(claimer1.address, amount1, [leaf2]);
@@ -149,10 +145,8 @@ describe("MerkleRewards", function () {
 
     const totalAmount = amount1.add(amount2);
 
-    const merkleRoot = solidityKeccak256(
-      ["bytes32", "bytes32"],
-      [leaf1, leaf2]
-    );
+    const sortedLeaves = [leaf1, leaf2].sort();
+    const merkleRoot = solidityKeccak256(["bytes32", "bytes32"], sortedLeaves);
     await merkleRewards.setMerkleRoot(merkleRoot, totalAmount);
 
     expect(
