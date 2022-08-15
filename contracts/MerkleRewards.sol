@@ -10,7 +10,6 @@ import "./IMerkleRewards.sol";
 
 contract MerkleRewards is IMerkleRewards, Ownable {
     using SafeERC20 for IERC20;
-    using SafeMath for uint256;
 
     // keccak256(abi.encodePacked("MERKLE_REWARDS_LEAF_HASH")) == 0xc25f889d60f4bc528f554912ac35e9e397b99db0e4dedf3f36bfbe75247f4c5a
     bytes32 public immutable LEAF_SALT = keccak256(abi.encodePacked("MERKLE_REWARDS_LEAF_HASH"));
@@ -29,7 +28,7 @@ contract MerkleRewards is IMerkleRewards, Ownable {
     function setMerkleRoot(bytes32 _merkleRoot, uint256 totalRewards) external override onlyOwner {
         require(totalRewards > previousTotalRewards, "MR: totalRewards must be >= previousTotalRewards");
 
-        uint256 additionalRewards = totalRewards.sub(previousTotalRewards, "MR: totalRewards must be >= previousTotalRewards");
+        uint256 additionalRewards = totalRewards - previousTotalRewards;
         previousTotalRewards = totalRewards;
 
         merkleRoot = _merkleRoot;
@@ -46,11 +45,13 @@ contract MerkleRewards is IMerkleRewards, Ownable {
         // Verify Merkle proof
         bytes32 leaf = keccak256(abi.encodePacked(LEAF_SALT, account, totalAmount));
         require(MerkleProof.verify(proof, merkleRoot, leaf), "MR: Invalid proof");
+        uint256 withdrawnAmount = withdrawn[account];
+        require(totalAmount > withdrawnAmount, "MR: totalAmount already withdrawn");
 
-        uint256 availableAmount = totalAmount.sub(withdrawn[account], "MR: totalAmount already withdrawn");
         withdrawn[account] = totalAmount;
 
         // Transfer the available amount
+        uint256 availableAmount = totalAmount - withdrawnAmount;
         rewardsToken.safeTransfer(account, availableAmount);
 
         emit Claimed(account, availableAmount, totalAmount);
