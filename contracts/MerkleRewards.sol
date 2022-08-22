@@ -30,7 +30,9 @@ contract MerkleRewards is IMerkleRewards, Ownable {
         require(merkleRoot != _merkleRoot, "MR: Must use new Merkle root");
         require(totalRewards > previousTotalRewards, "MR: totalRewards must be > previousTotalRewards");
 
-        uint256 additionalRewards = totalRewards - previousTotalRewards;
+        unchecked {
+            uint256 additionalRewards = totalRewards - previousTotalRewards;
+        }
         previousTotalRewards = totalRewards;
 
         merkleRoot = _merkleRoot;
@@ -55,7 +57,9 @@ contract MerkleRewards is IMerkleRewards, Ownable {
         withdrawn[account] = totalAmount;
 
         // Transfer the available amount
-        uint256 availableAmount = totalAmount - withdrawnAmount;
+        unchecked {
+            uint256 availableAmount = totalAmount - withdrawnAmount;
+        }
         rewardsToken.safeTransfer(account, availableAmount);
 
         emit Claimed(account, availableAmount, totalAmount);
