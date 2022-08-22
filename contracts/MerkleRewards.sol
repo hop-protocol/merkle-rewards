@@ -37,9 +37,9 @@ contract MerkleRewards is IMerkleRewards, Ownable {
         currentTotalRewards = totalRewards;
 
         merkleRoot = _merkleRoot;
-        rewardsToken.safeTransferFrom(msg.sender, address(this), additionalRewards);
-
         emit MerkleRootSet(_merkleRoot, totalRewards);
+
+        rewardsToken.safeTransferFrom(msg.sender, address(this), additionalRewards);
     }
 
     /**
@@ -60,8 +60,8 @@ contract MerkleRewards is IMerkleRewards, Ownable {
         unchecked {
             availableAmount = totalAmount - withdrawnAmount;
         }
-        rewardsToken.safeTransfer(account, availableAmount);
-
         emit Claimed(account, availableAmount, totalAmount);
+
+        rewardsToken.safeTransfer(account, availableAmount);
     }
 }
