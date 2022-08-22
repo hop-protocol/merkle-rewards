@@ -46,8 +46,6 @@ contract MerkleRewards is IMerkleRewards, Ownable {
      * @notice `totalAmount` must be the exact amount set in the latest `merkleRoot`.
      */
     function claim(address account, uint256 totalAmount, bytes32[] calldata proof) external override {
-        require(account != address(0), "MR: account must be non-zero");
-
         // Verify Merkle proof
         bytes32 leaf = keccak256(abi.encodePacked(LEAF_SALT, account, totalAmount));
         require(MerkleProof.verify(proof, merkleRoot, leaf), "MR: Invalid proof");
