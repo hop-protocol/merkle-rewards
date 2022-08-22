@@ -30,8 +30,9 @@ contract MerkleRewards is IMerkleRewards, Ownable {
         require(merkleRoot != _merkleRoot, "MR: Must use new Merkle root");
         require(totalRewards > previousTotalRewards, "MR: totalRewards must be > previousTotalRewards");
 
+        uint256 additionalRewards;
         unchecked {
-            uint256 additionalRewards = totalRewards - previousTotalRewards;
+            additionalRewards = totalRewards - previousTotalRewards;
         }
         previousTotalRewards = totalRewards;
 
@@ -48,15 +49,16 @@ contract MerkleRewards is IMerkleRewards, Ownable {
     function claim(address account, uint256 totalAmount, bytes32[] calldata proof) external override {
         // Verify Merkle proof
         bytes32 leaf = keccak256(abi.encodePacked(LEAF_SALT, account, totalAmount));
-        require(MerkleProof.verify(proof, merkleRoot, leaf), "MR: Invalid proof");
+        require(MerkleProof.verifyCalldata(proof, merkleRoot, leaf), "MR: Invalid proof");
         uint256 withdrawnAmount = withdrawn[account];
         require(totalAmount > withdrawnAmount, "MR: totalAmount already withdrawn");
 
         withdrawn[account] = totalAmount;
 
         // Transfer the available amount
+        uint256 availableAmount;
         unchecked {
-            uint256 availableAmount = totalAmount - withdrawnAmount;
+            availableAmount = totalAmount - withdrawnAmount;
         }
         rewardsToken.safeTransfer(account, availableAmount);
 
