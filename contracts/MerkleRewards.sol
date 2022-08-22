@@ -14,7 +14,7 @@ contract MerkleRewards is IMerkleRewards, Ownable {
     bytes32 public immutable LEAF_SALT = keccak256(abi.encodePacked("MERKLE_REWARDS_LEAF_HASH"));
     IERC20 public immutable override rewardsToken;
     bytes32 public override merkleRoot;
-    uint256 public override previousTotalRewards;
+    uint256 public override currentTotalRewards;
     mapping(address => uint256) public override withdrawn;
 
     constructor(IERC20 _rewardsToken) {
@@ -28,13 +28,13 @@ contract MerkleRewards is IMerkleRewards, Ownable {
     function setMerkleRoot(bytes32 _merkleRoot, uint256 totalRewards) external override onlyOwner {
         require(_merkleRoot != bytes32(0), "MR: _merkleRoot must be non-zero");
         require(merkleRoot != _merkleRoot, "MR: Must use new Merkle root");
-        require(totalRewards > previousTotalRewards, "MR: totalRewards must be > previousTotalRewards");
+        require(totalRewards > currentTotalRewards, "MR: totalRewards must be > currentTotalRewards");
 
         uint256 additionalRewards;
         unchecked {
-            additionalRewards = totalRewards - previousTotalRewards;
+            additionalRewards = totalRewards - currentTotalRewards;
         }
-        previousTotalRewards = totalRewards;
+        currentTotalRewards = totalRewards;
 
         merkleRoot = _merkleRoot;
         rewardsToken.safeTransferFrom(msg.sender, address(this), additionalRewards);

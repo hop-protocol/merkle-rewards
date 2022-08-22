@@ -4,7 +4,7 @@ A simple contract for distributing ongoing rewards calculated offchain.
 ## Usage
 Rewards are periodically calculated offchain and a new Merkle tree containing the `totalAmount`s for each account is produced. The calculated `totalAmount`s amount for each account should strictly increase or stay the same with time.
 
-Each period, the owner calls `setMerkleRoot` and the new `merkleRoot` and `totalRewards` are set. This function also collects rewards tokens from the owner equal to the difference between `previousTotalRewards` and the new `totalRewards`.
+Each period, the owner calls `setMerkleRoot` and the new `merkleRoot` and `totalRewards` are set. This function also collects rewards tokens from the owner equal to the difference between `currentTotalRewards` and the new `totalRewards`.
 
 Accounts can withdraw the difference between their `totalAmount` and `merkleRewards.withdrawn(account)`.
 

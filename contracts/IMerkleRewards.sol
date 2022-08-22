@@ -8,7 +8,7 @@ interface IMerkleRewards {
 
     function rewardsToken() external view returns (IERC20);
     function merkleRoot() external view returns (bytes32);
-    function previousTotalRewards() external view returns (uint256);
+    function currentTotalRewards() external view returns (uint256);
     function withdrawn(address account) external view returns (uint256);
     function setMerkleRoot(bytes32 _merkleRoot, uint256 totalRewards) external;
     function claim(address account, uint256 totalAmount, bytes32[] calldata proof) external;
