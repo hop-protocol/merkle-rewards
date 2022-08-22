@@ -28,7 +28,6 @@ contract MerkleRewards is IMerkleRewards, Ownable {
      */
     function setMerkleRoot(bytes32 _merkleRoot, uint256 totalRewards) external override onlyOwner {
         require(_merkleRoot != bytes32(0), "MR: _merkleRoot must be non-zero");
-        require(totalRewards > 0, "MR: totalRewards must be non-zero");
         require(merkleRoot != _merkleRoot, "MR: Must use new Merkle root");
         require(totalRewards > previousTotalRewards, "MR: totalRewards must be > previousTotalRewards");
 
