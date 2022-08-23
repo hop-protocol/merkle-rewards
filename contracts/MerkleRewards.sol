@@ -50,19 +50,8 @@ contract MerkleRewards is IMerkleRewards, Ownable {
         // Verify Merkle proof
         bytes32 leaf = keccak256(abi.encodePacked(LEAF_SALT, account, totalAmount));
         require(MerkleProof.verifyCalldata(proof, merkleRoot, leaf), "MR: Invalid proof");
-        uint256 withdrawnAmount = withdrawn[account];
-        require(totalAmount > withdrawnAmount, "MR: totalAmount already withdrawn");
 
-        withdrawn[account] = totalAmount;
-
-        // Transfer the available amount
-        uint256 availableAmount;
-        unchecked {
-            availableAmount = totalAmount - withdrawnAmount;
-        }
-        emit Claimed(account, availableAmount, totalAmount);
-
-        rewardsToken.safeTransfer(account, availableAmount);
+        _distribute(account, totalAmount);
     }
 
     /**
@@ -90,20 +79,22 @@ contract MerkleRewards is IMerkleRewards, Ownable {
         require(MerkleProof.multiProofVerifyCalldata(proof, proofFlags, merkleRoot, leaves), "MR: Invalid proof");
 
         for (uint256 i = 0; i < numAccounts; i++) {
-            address account = accounts[i];
-            uint256 totalAmount = totalAmounts[i];
-            uint256 withdrawnAmount = withdrawn[account];
-            require(totalAmount > withdrawnAmount, "MR: totalAmount already withdrawn");
-
-            withdrawn[account] = totalAmount;
-            // Transfer the available amount
-            uint256 availableAmount;
-            unchecked {
-                availableAmount = totalAmount - withdrawnAmount;
-            }
-            emit Claimed(account, availableAmount, totalAmount);
-
-            rewardsToken.safeTransfer(account, availableAmount);
+            _distribute(accounts[i], totalAmounts[i]);
         }
+    }
+
+    function _distribute(address account, uint256 totalAmount) private {
+        uint256 withdrawnAmount = withdrawn[account];
+        require(totalAmount > withdrawnAmount, "MR: totalAmount already withdrawn");
+
+        withdrawn[account] = totalAmount;
+        // Transfer the available amount
+        uint256 availableAmount;
+        unchecked {
+            availableAmount = totalAmount - withdrawnAmount;
+        }
+        emit Claimed(account, availableAmount, totalAmount);
+
+        rewardsToken.safeTransfer(account, availableAmount);
     }
 }
