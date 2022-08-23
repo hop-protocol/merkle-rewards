@@ -64,4 +64,46 @@ contract MerkleRewards is IMerkleRewards, Ownable {
 
         rewardsToken.safeTransfer(account, availableAmount);
     }
+
+    /**
+     * @dev 
+     * @notice `totalAmounts` must be the exact amount set in the latest `merkleRoot`.
+     */
+    function claimMultiple(
+        address[] calldata accounts,
+        uint256[] calldata totalAmounts,
+        bytes32[] calldata proof,
+        bool[] calldata proofFlags
+    )
+        external
+        override
+    {
+        uint256 numAccounts = accounts.length;
+        require(numAccounts == totalAmounts.length, "MR: accounts and totalAmounts must be same length");
+
+        // Verify Merkle proof
+        bytes32 leafSalt = LEAF_SALT;
+        bytes32[] memory leaves = new bytes32[](accounts.length);
+        for (uint256 i = 0; i < numAccounts; i++) {
+            leaves[i] = keccak256(abi.encodePacked(leafSalt, accounts[i], totalAmounts[i]));
+        }
+        require(MerkleProof.multiProofVerifyCalldata(proof, proofFlags, merkleRoot, leaves), "MR: Invalid proof");
+
+        for (uint256 i = 0; i < numAccounts; i++) {
+            address account = accounts[i];
+            uint256 totalAmount = totalAmounts[i];
+            uint256 withdrawnAmount = withdrawn[account];
+            require(totalAmount > withdrawnAmount, "MR: totalAmount already withdrawn");
+
+            withdrawn[account] = totalAmount;
+            // Transfer the available amount
+            uint256 availableAmount;
+            unchecked {
+                availableAmount = totalAmount - withdrawnAmount;
+            }
+            emit Claimed(account, availableAmount, totalAmount);
+
+            rewardsToken.safeTransfer(account, availableAmount);
+        }
+    }
 }

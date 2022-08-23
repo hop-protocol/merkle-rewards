@@ -12,4 +12,10 @@ interface IMerkleRewards {
     function withdrawn(address account) external view returns (uint256);
     function setMerkleRoot(bytes32 _merkleRoot, uint256 totalRewards) external;
     function claim(address account, uint256 totalAmount, bytes32[] calldata proof) external;
+    function claimMultiple(
+        address[] calldata accounts,
+        uint256[] calldata totalAmounts,
+        bytes32[] calldata proof,
+        bool[] calldata proofFlags
+    ) external;
 }
