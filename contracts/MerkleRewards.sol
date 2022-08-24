@@ -55,7 +55,7 @@ contract MerkleRewards is IMerkleRewards, Ownable {
     }
 
     /**
-     * @dev 
+     * @dev Claim all available rewards for `accounts`.
      * @notice `totalAmounts` must be the exact amount set in the latest `merkleRoot`.
      */
     function claimMultiple(
