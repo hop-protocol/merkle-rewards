@@ -49,6 +49,10 @@ const config: HardhatUserConfig = {
       url: process.env.RPC_ENDPOINT_MAINNET || "",
       accounts,
     },
+    gnosis: {
+      url: process.env.RPC_ENDPOINT_GNOSIS || "",
+      accounts,
+    },
   },
   gasReporter: {
     enabled: process.env.REPORT_GAS !== undefined,
